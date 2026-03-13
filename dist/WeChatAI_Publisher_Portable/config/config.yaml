@@ -1,0 +1,116 @@
+# 公众号运营 AI 员工 - 配置文件
+# ============================================
+# 
+# 快速开始：
+# 1. 确保你已经安装依赖：pip install -r requirements.txt
+# 2. 本配置已设置为 RPA 模式（浏览器自动化），无需微信 API 权限
+# 3. 运行：python src/main.py --workflow create --topic "你的主题"
+#
+# ============================================
+
+# 微信公众号配置
+wechat:
+  # === API 模式配置（如需使用传统 API 方式，取消注释并填写）===
+  # app_id: "your_app_id"
+  # app_secret: "your_app_secret"
+  # token: "your_token"
+  # encoding_aes_key: "your_encoding_aes_key"
+  
+  # === 发布模式选择 ===
+  # 使用哪种方式发布：
+  # - "api": 使用微信公众号接口（需要认证号 + IP 白名单）
+  # - "rpa": 使用浏览器自动化（支持个人号，无需 API 权限）
+  publish_mode: "rpa"
+  
+  # === RPA 模式配置（浏览器自动化）===
+  # 已配置为使用 RPA 模式，通过模拟浏览器操作公众号后台
+  use_rpa: true              # 启用 RPA 模式
+  rpa_headless: false        # false=显示浏览器窗口（首次需要扫码登录）
+                            # true=无头模式（后台运行，需要已保存登录状态）
+  rpa_state_dir: "./data/rpa_state"  # 登录状态保存目录（自动创建）
+  
+  # 发布设置
+  publish:
+    default_author: "AI小编"    # 文章默认作者
+    auto_publish: false          # false=保存为草稿（推荐，可人工审核）
+                                 # true=直接发布（谨慎使用）
+    publish_time: "09:00"        # 定时发布时间（如使用定时功能）
+
+# AI 服务配置
+# ============================================
+# 使用 ECNU（华东师范大学）提供的 OpenAI 兼容 API
+# 如需更换其他 AI 服务，请修改 base_url 和 api_key
+ai:
+  provider: "openai_compatible"
+  
+  # ECNU OpenAI 兼容 API
+  # 申请地址：https://chat.ecnu.edu.cn/
+  api_key: "sk-bddadfd452fe4055bb8c18abbdd29a71"
+  base_url: "https://chat.ecnu.edu.cn/open/api/v1"
+  model: "gpt-4"  # 可用模型: gpt-4, gpt-3.5-turbo
+
+# 内容生成配置
+# ============================================
+# 设置公众号的定位和文章风格
+content:
+  # 公众号定位
+  positioning:
+    name: "AI科技前沿"           # 你的公众号名称
+    description: "分享人工智能最新动态和职场效率技巧"
+    target_audience: "对AI感兴趣的职场人士"
+    tone: "专业"                # 风格: 专业/轻松/幽默/严肃
+    categories:
+      - "科技"
+      - "职场"
+  
+  # 文章风格
+  style:
+    min_length: 1500          # 文章最小字数
+    max_length: 3000          # 文章最大字数
+    include_images: false     # 是否配图（RPA 版本建议关闭，需手动上传）
+    image_count: 0            # 配图数量
+
+# 搜索配置
+# ============================================
+# 用于 ResearchAgent 搜索参考资料
+# 如需使用真实搜索，请申请 Brave Search API Key
+search:
+  sources:
+    - "zhihu"
+    - "news"
+  
+  hot_topics:
+    enabled: true
+    max_topics: 3
+  
+  keywords:
+    - "人工智能"
+    - "ChatGPT"
+    - "职场效率"
+
+# 敏感词检测
+sensitive_words:
+  custom_list: []           # 自定义敏感词
+  level: "normal"           # 检测级别: strict/normal/loose
+  action: "warn"            # 处理方式: block/warn/replace
+
+# 图片生成（暂时禁用）
+image:
+  provider: "placeholder"   # placeholder=占位符, dalle=AI生成
+  api_key: ""
+  style: "现代简约"
+  size: "1024x1024"
+
+# 系统配置
+system:
+  log_level: "INFO"         # 日志级别: DEBUG/INFO/WARNING/ERROR
+  data_retention_days: 90   # 数据保留天数
+  max_workers: 1            # RPA 版本建议单线程
+  retry_times: 3            # 失败重试次数
+
+# 通知配置
+notification:
+  on_complete: true
+  on_error: true
+  channels:
+    - "wechat"

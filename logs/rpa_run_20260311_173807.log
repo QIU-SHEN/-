@@ -1,0 +1,83 @@
+[2026-03-11 17:38:07] [INFO] 【步骤 1】WeChatRPA 初始化
+[2026-03-11 17:38:07] [DEBUG] [调试] 配置: headless=False, slow_mo=500, timeout=30000
+[2026-03-11 17:38:07] [DEBUG] [调试] 状态目录: data\rpa_state
+[2026-03-11 17:38:14] [INFO] 【步骤 2】开始点击'文章'按钮
+[2026-03-11 17:38:14] [INFO] [页面状态] URL: https://mp.weixin.qq.com/cgi-bin/home?t=home/index&lang=zh_CN&token=1868011464
+[2026-03-11 17:38:14] [DEBUG] [调试] 准备尝试 15 个选择器
+[2026-03-11 17:38:14] [DEBUG] [调试] [1/15] 尝试选择器: .new-creation__menu-item:has(.new-creation__menu-title:has-text("文章"))
+[2026-03-11 17:38:14] [INFO] [成功] ✓ [选择器] .new-creation__menu-item:has(.new-creation__menu-title:has-text("文章")) -> 找到 (超时: 5.0s)
+[2026-03-11 17:38:14] [INFO] [操作] 查找按钮 | 目标: 文章按钮 | 详情: 选择器: .new-creation__menu-item:has(.new-creation__menu-title:has-text("文章")), 文字: 文章
+[2026-03-11 17:38:14] [INFO] [操作] 点击 | 目标: 文章按钮 | 详情: 使用JavaScript点击
+[2026-03-11 17:38:14] [INFO] [成功] ✓ JavaScript 点击成功: clicked new-creation menu item
+[2026-03-11 17:38:14] [INFO] [成功] ✓ 已点击'文章'按钮
+[2026-03-11 17:38:28] [INFO] 【步骤 3】开始填写标题
+[2026-03-11 17:38:28] [DEBUG] [调试] 标题内容长度: 17
+[2026-03-11 17:38:28] [INFO] [操作] 查找标题输入框 | 目标: .ProseMirror[contenteditable="true"][data-placeholder*="标题"] | 详情: ProseMirror编辑器
+[2026-03-11 17:38:33] [WARNING] [警告] ! 新版标题填写失败: Locator.wait_for: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator(".ProseMirror[contenteditable=\"true\"][data-placeholder*=\"标题\"]").first to be visible
+
+[2026-03-11 17:38:33] [INFO] 【步骤 4】尝试旧版标题输入框
+[2026-03-11 17:38:33] [INFO] [操作] 查找标题输入框 | 目标: #title | 详情: 旧版编辑器
+[2026-03-11 17:38:33] [INFO] [成功] ✓ [选择器] #title -> 找到 (超时: 5.0s)
+[2026-03-11 17:38:33] [INFO] [操作] 填写 | 目标: 标题输入框(旧版) | 详情: 内容: 教育改革深入推进，素质教育成效显现...
+[2026-03-11 17:38:34] [INFO] [成功] ✓ 标题填写成功(旧版)
+[2026-03-11 17:38:36] [INFO] 【步骤 5】开始填写作者
+[2026-03-11 17:38:36] [INFO] [操作] 查找作者输入框 | 目标: input#author
+[2026-03-11 17:38:36] [INFO] [成功] ✓ [选择器] input#author -> 找到 (超时: 10.0s)
+[2026-03-11 17:38:36] [INFO] [操作] 点击 | 目标: 作者输入框 | 详情: 聚焦
+[2026-03-11 17:38:37] [INFO] [操作] 键盘操作 | 目标: 作者输入框 | 详情: Control+a 全选
+[2026-03-11 17:38:38] [INFO] [操作] 填写 | 目标: 作者输入框 | 详情: 内容: AI小编
+[2026-03-11 17:38:39] [INFO] [成功] ✓ 作者填写成功
+[2026-03-11 17:38:40] [INFO] 【步骤 6】开始填写正文
+[2026-03-11 17:38:40] [DEBUG] [调试] 正文长度: 1035 字符
+[2026-03-11 17:38:40] [INFO] [操作] 尝试 | 目标: 正文编辑器 | 详情: ProseMirror方式
+[2026-03-11 17:38:40] [INFO] 【步骤 7】查找ProseMirror正文编辑器
+[2026-03-11 17:38:40] [DEBUG] [调试] 准备尝试 4 个选择器
+[2026-03-11 17:38:40] [DEBUG] [调试] [1/4] 尝试选择器: div.ProseMirror[contenteditable="true"]:has(.editor_content_placeholder:has-text("从这里开始写正文"))
+[2026-03-11 17:38:40] [INFO] [成功] ✓ [选择器] div.ProseMirror[contenteditable="true"]:has(.editor_content_placeholder:has-text("从这里开始写正文")) -> 找到 (超时: 5.0s)
+[2026-03-11 17:38:40] [INFO] [操作] 点击 | 目标: 正文编辑器 | 详情: 选择器: div.ProseMirror[contenteditable="true"]:has(.editor_content_placeholder:has-text("从这里开始写正文"))
+[2026-03-11 17:38:41] [INFO] [操作] 键盘操作 | 目标: 正文编辑器 | 详情: Control+a 全选
+[2026-03-11 17:38:42] [INFO] [操作] 填写 | 目标: 正文编辑器 | 详情: 内容长度: 1035
+[2026-03-11 17:38:43] [INFO] [成功] ✓ 正文填写成功(ProseMirror)
+[2026-03-11 17:38:45] [INFO] 【步骤 8】开始AI配图生成封面
+[2026-03-11 17:38:45] [INFO] 【步骤 9】Hover封面区域
+[2026-03-11 17:38:45] [INFO] [成功] ✓ [选择器] .select-cover__btn.js_cover_btn_area -> 找到 (超时: 5.0s)
+[2026-03-11 17:38:45] [INFO] [操作] Hover | 目标: 封面区域
+[2026-03-11 17:38:47] [INFO] [成功] ✓ 已hover封面区域
+[2026-03-11 17:38:48] [INFO] 【步骤 10】点击AI配图按钮
+[2026-03-11 17:38:48] [DEBUG] [调试] 等待菜单弹出...
+[2026-03-11 17:38:48] [WARNING] [警告] ! 菜单未显示，等待后再次检查...
+[2026-03-11 17:38:52] [INFO] [操作] JavaScript点击 | 目标: AI配图按钮 | 详情: 在菜单中查找AI配图链接
+[2026-03-11 17:38:52] [INFO] [成功] ✓ 点击AI配图成功 (method1: a.pop-opr__button.js_aiImage)
+[2026-03-11 17:38:56] [INFO] 【步骤 11】输入标题到AI配图
+[2026-03-11 17:38:56] [INFO] [成功] ✓ [选择器] textarea#ai-image-prompt -> 找到 (超时: 5.0s)
+[2026-03-11 17:38:56] [INFO] [操作] 点击 | 目标: AI配图输入框
+[2026-03-11 17:38:56] [INFO] [操作] 填写 | 目标: AI配图输入框 | 详情: 标题: 教育改革深入推进，素质教育成效显现...
+[2026-03-11 17:38:57] [INFO] [成功] ✓ 已输入标题: 教育改革深入推进，素质教育成效显现...
+[2026-03-11 17:38:58] [INFO] 【步骤 12】点击开始创作
+[2026-03-11 17:38:58] [ERROR] [失败] ✗ AI配图失败
+异常类型: AttributeError
+异常信息: 'RPALogger' object has no attribute 'info'
+堆栈跟踪:
+Traceback (most recent call last):
+  File "D:\OpenClaw-Projects\wechat-ai-assistant\src\tools\rpa_tool.py", line 2120, in _upload_cover_ai
+    self.detail_logger.info(f"点击开始创作前已有 {initial_count} 张图片")
+AttributeError: 'RPALogger' object has no attribute 'info'
+
+[2026-03-11 17:38:59] [INFO] 【步骤 13】开始发布文章
+[2026-03-11 17:38:59] [INFO] 【步骤 14】点击发表按钮
+[2026-03-11 17:39:00] [INFO] [操作] JavaScript点击 | 目标: 发表按钮 | 详情: button.mass_send
+[2026-03-11 17:39:00] [INFO] [成功] ✓ 已点击发表按钮
+[2026-03-11 17:39:02] [INFO] 【步骤 15】点击确认发表
+[2026-03-11 17:39:02] [INFO] [操作] JavaScript点击 | 目标: 确认发表按钮 | 详情: 查找包含'发表'文本的按钮
+[2026-03-11 17:39:02] [ERROR] [失败] ✗ 未找到确认发表按钮
+[2026-03-11 17:39:02] [ERROR] [失败] ✗ 发布失败
+异常类型: Exception
+异常信息: 未找到确认发表按钮
+堆栈跟踪:
+Traceback (most recent call last):
+  File "D:\OpenClaw-Projects\wechat-ai-assistant\src\tools\rpa_tool.py", line 2445, in publish
+    raise Exception("未找到确认发表按钮")
+Exception: 未找到确认发表按钮
+

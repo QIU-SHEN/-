@@ -1,0 +1,99 @@
+[2026-03-11 17:21:43] [INFO] 【步骤 1】WeChatRPA 初始化
+[2026-03-11 17:21:43] [DEBUG] [调试] 配置: headless=False, slow_mo=500, timeout=30000
+[2026-03-11 17:21:43] [DEBUG] [调试] 状态目录: data\rpa_state
+[2026-03-11 17:21:51] [INFO] 【步骤 2】开始点击'文章'按钮
+[2026-03-11 17:21:51] [INFO] [页面状态] URL: https://mp.weixin.qq.com/cgi-bin/home?t=home/index&lang=zh_CN&token=1868011464
+[2026-03-11 17:21:51] [DEBUG] [调试] 准备尝试 15 个选择器
+[2026-03-11 17:21:51] [DEBUG] [调试] [1/15] 尝试选择器: .new-creation__menu-item:has(.new-creation__menu-title:has-text("文章"))
+[2026-03-11 17:21:51] [INFO] [成功] ✓ [选择器] .new-creation__menu-item:has(.new-creation__menu-title:has-text("文章")) -> 找到 (超时: 5.0s)
+[2026-03-11 17:21:51] [INFO] [操作] 查找按钮 | 目标: 文章按钮 | 详情: 选择器: .new-creation__menu-item:has(.new-creation__menu-title:has-text("文章")), 文字: 文章
+[2026-03-11 17:21:51] [INFO] [操作] 点击 | 目标: 文章按钮 | 详情: 使用JavaScript点击
+[2026-03-11 17:21:51] [INFO] [成功] ✓ JavaScript 点击成功: clicked new-creation menu item
+[2026-03-11 17:21:51] [INFO] [成功] ✓ 已点击'文章'按钮
+[2026-03-11 17:22:07] [INFO] 【步骤 3】开始填写标题
+[2026-03-11 17:22:07] [DEBUG] [调试] 标题内容长度: 20
+[2026-03-11 17:22:07] [INFO] [操作] 查找标题输入框 | 目标: .ProseMirror[contenteditable="true"][data-placeholder*="标题"] | 详情: ProseMirror编辑器
+[2026-03-11 17:22:12] [WARNING] [警告] ! 新版标题填写失败: Locator.wait_for: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator(".ProseMirror[contenteditable=\"true\"][data-placeholder*=\"标题\"]").first to be visible
+
+[2026-03-11 17:22:12] [INFO] 【步骤 4】尝试旧版标题输入框
+[2026-03-11 17:22:12] [INFO] [操作] 查找标题输入框 | 目标: #title | 详情: 旧版编辑器
+[2026-03-11 17:22:12] [INFO] [成功] ✓ [选择器] #title -> 找到 (超时: 5.0s)
+[2026-03-11 17:22:12] [INFO] [操作] 填写 | 目标: 标题输入框(旧版) | 详情: 内容: AI大模型技术持续突破，应用场景不断拓展...
+[2026-03-11 17:22:13] [INFO] [成功] ✓ 标题填写成功(旧版)
+[2026-03-11 17:22:15] [INFO] 【步骤 5】开始填写作者
+[2026-03-11 17:22:15] [INFO] [操作] 查找作者输入框 | 目标: input#author
+[2026-03-11 17:22:15] [INFO] [成功] ✓ [选择器] input#author -> 找到 (超时: 10.0s)
+[2026-03-11 17:22:15] [INFO] [操作] 点击 | 目标: 作者输入框 | 详情: 聚焦
+[2026-03-11 17:22:16] [INFO] [操作] 键盘操作 | 目标: 作者输入框 | 详情: Control+a 全选
+[2026-03-11 17:22:17] [INFO] [操作] 填写 | 目标: 作者输入框 | 详情: 内容: AI小编
+[2026-03-11 17:22:17] [INFO] [成功] ✓ 作者填写成功
+[2026-03-11 17:22:19] [INFO] 【步骤 6】开始填写正文
+[2026-03-11 17:22:19] [DEBUG] [调试] 正文长度: 1194 字符
+[2026-03-11 17:22:19] [INFO] [操作] 尝试 | 目标: 正文编辑器 | 详情: ProseMirror方式
+[2026-03-11 17:22:19] [INFO] 【步骤 7】查找ProseMirror正文编辑器
+[2026-03-11 17:22:19] [DEBUG] [调试] 准备尝试 4 个选择器
+[2026-03-11 17:22:19] [DEBUG] [调试] [1/4] 尝试选择器: div.ProseMirror[contenteditable="true"]:has(.editor_content_placeholder:has-text("从这里开始写正文"))
+[2026-03-11 17:22:19] [INFO] [成功] ✓ [选择器] div.ProseMirror[contenteditable="true"]:has(.editor_content_placeholder:has-text("从这里开始写正文")) -> 找到 (超时: 5.0s)
+[2026-03-11 17:22:19] [INFO] [操作] 点击 | 目标: 正文编辑器 | 详情: 选择器: div.ProseMirror[contenteditable="true"]:has(.editor_content_placeholder:has-text("从这里开始写正文"))
+[2026-03-11 17:22:20] [INFO] [操作] 键盘操作 | 目标: 正文编辑器 | 详情: Control+a 全选
+[2026-03-11 17:22:21] [INFO] [操作] 填写 | 目标: 正文编辑器 | 详情: 内容长度: 1194
+[2026-03-11 17:22:22] [INFO] [成功] ✓ 正文填写成功(ProseMirror)
+[2026-03-11 17:22:24] [INFO] 【步骤 8】开始AI配图生成封面
+[2026-03-11 17:22:24] [INFO] 【步骤 9】Hover封面区域
+[2026-03-11 17:22:24] [INFO] [成功] ✓ [选择器] .select-cover__btn.js_cover_btn_area -> 找到 (超时: 5.0s)
+[2026-03-11 17:22:24] [INFO] [操作] Hover | 目标: 封面区域
+[2026-03-11 17:22:27] [INFO] [成功] ✓ 已hover封面区域
+[2026-03-11 17:22:27] [INFO] 【步骤 10】点击AI配图按钮
+[2026-03-11 17:22:27] [DEBUG] [调试] 等待菜单弹出(.pop-opr__group)...
+[2026-03-11 17:22:30] [WARNING] [警告] ! 菜单未自动弹出，尝试再次hover
+[2026-03-11 17:22:33] [DEBUG] [调试] [1/5] 尝试选择器: a.pop-opr__button.js_aiImage
+[2026-03-11 17:22:35] [ERROR] [失败] ✗ AI配图失败
+异常类型: TypeError
+异常信息: RPALogger.selector() got an unexpected keyword argument 'error'
+堆栈跟踪:
+Traceback (most recent call last):
+  File "D:\OpenClaw-Projects\wechat-ai-assistant\src\tools\rpa_tool.py", line 2013, in _upload_cover_ai
+    ai_btn.wait_for(state='visible', timeout=2000)
+  File "C:\Users\DELL\AppData\Local\Programs\Python\Python310\lib\site-packages\playwright\sync_api\_generated.py", line 18074, in wait_for
+    self._sync(self._impl_obj.wait_for(timeout=timeout, state=state))
+  File "C:\Users\DELL\AppData\Local\Programs\Python\Python310\lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+  File "C:\Users\DELL\AppData\Local\Programs\Python\Python310\lib\site-packages\playwright\_impl\_locator.py", line 710, in wait_for
+    await self._frame.wait_for_selector(
+  File "C:\Users\DELL\AppData\Local\Programs\Python\Python310\lib\site-packages\playwright\_impl\_frame.py", line 369, in wait_for_selector
+    await self._channel.send(
+  File "C:\Users\DELL\AppData\Local\Programs\Python\Python310\lib\site-packages\playwright\_impl\_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+  File "C:\Users\DELL\AppData\Local\Programs\Python\Python310\lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Locator.wait_for: Timeout 2000ms exceeded.
+Call log:
+  - waiting for locator("a.pop-opr__button.js_aiImage").first to be visible
+    9 × locator resolved to hidden <a href="javascript:;" onclick="return false;" class="pop-opr__button js_aiImage">AI 配图</a>
+
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\OpenClaw-Projects\wechat-ai-assistant\src\tools\rpa_tool.py", line 2025, in _upload_cover_ai
+    self.detail_logger.selector(selector, found=False, timeout=2.0, error=str(e)[:50])
+TypeError: RPALogger.selector() got an unexpected keyword argument 'error'
+
+[2026-03-11 17:22:35] [INFO] 【步骤 11】开始发布文章
+[2026-03-11 17:22:35] [INFO] 【步骤 12】点击发表按钮
+[2026-03-11 17:22:37] [INFO] [操作] JavaScript点击 | 目标: 发表按钮 | 详情: button.mass_send
+[2026-03-11 17:22:37] [INFO] [成功] ✓ 已点击发表按钮
+[2026-03-11 17:22:39] [INFO] 【步骤 13】点击确认发表
+[2026-03-11 17:22:39] [INFO] [操作] JavaScript点击 | 目标: 确认发表按钮 | 详情: 查找包含'发表'文本的按钮
+[2026-03-11 17:22:39] [ERROR] [失败] ✗ 未找到确认发表按钮
+[2026-03-11 17:22:39] [ERROR] [失败] ✗ 发布失败
+异常类型: Exception
+异常信息: 未找到确认发表按钮
+堆栈跟踪:
+Traceback (most recent call last):
+  File "D:\OpenClaw-Projects\wechat-ai-assistant\src\tools\rpa_tool.py", line 2368, in publish
+    raise Exception("未找到确认发表按钮")
+Exception: 未找到确认发表按钮
+
