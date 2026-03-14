@@ -1,0 +1,80 @@
+{
+  "daily": [
+    {
+      "date": "2026-03-13",
+      "read_count": 0,
+      "like_count": 0,
+      "share_count": 0,
+      "comment_count": 0,
+      "collect_time": "2026-03-14 11:33:59"
+    }
+  ],
+  "weekly": [
+    {
+      "period": "最近7天",
+      "read_count": 150,
+      "like_count": 0,
+      "share_count": 7,
+      "comment_count": 0,
+      "avg_read": 21.4,
+      "avg_like": 0,
+      "collect_time": "2026-03-14 11:21:58",
+      "date": "2026-03-13"
+    },
+    {
+      "period": "最近7天",
+      "read_count": 150,
+      "like_count": 0,
+      "share_count": 7,
+      "comment_count": 0,
+      "avg_read": 21.4,
+      "avg_like": 0,
+      "collect_time": "2026-03-14 11:22:48",
+      "date": "2026-03-13"
+    },
+    {
+      "period": "最近7天",
+      "read_count": 150,
+      "like_count": 0,
+      "share_count": 7,
+      "comment_count": 0,
+      "avg_read": 21.4,
+      "avg_like": 0,
+      "collect_time": "2026-03-14 11:23:35",
+      "date": "2026-03-13"
+    },
+    {
+      "period": "最近7天",
+      "read_count": 150,
+      "like_count": 0,
+      "share_count": 7,
+      "comment_count": 0,
+      "avg_read": 21.4,
+      "avg_like": 0,
+      "collect_time": "2026-03-14 11:25:50",
+      "date": "2026-03-13"
+    },
+    {
+      "period": "最近7天",
+      "read_count": 150,
+      "like_count": 0,
+      "share_count": 7,
+      "comment_count": 0,
+      "avg_read": 21.4,
+      "avg_like": 0,
+      "collect_time": "2026-03-14 11:29:29",
+      "date": "2026-03-13"
+    },
+    {
+      "period": "最近7天",
+      "read_count": 150,
+      "like_count": 0,
+      "share_count": 7,
+      "comment_count": 0,
+      "avg_read": 21.4,
+      "avg_like": 0,
+      "collect_time": "2026-03-14 11:34:01",
+      "date": "2026-03-13"
+    }
+  ]
+}

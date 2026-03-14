@@ -5,6 +5,7 @@ ResearchAgent - 热点新闻获取Agent
 
 功能：
 - 根据新闻类型获取网上热点
+- 结合历史数据分析优化热点选择
 - 输出10个标题到txt文件
 
 支持的新闻类型：
@@ -21,7 +22,7 @@ import json
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 class ResearchAgent:
@@ -262,13 +263,14 @@ class ResearchAgent:
         ])
         return all_titles[:10]
     
-    def save_to_file(self, titles: List[str], category: str) -> str:
+    def save_to_file(self, titles: List[str], category: str, analytics_hints: Dict = None) -> str:
         """
         保存标题到文件
         
         Args:
             titles: 标题列表
             category: 新闻类型
+            analytics_hints: 数据分析优化建议
             
         Returns:
             文件路径
@@ -281,19 +283,31 @@ class ResearchAgent:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(f"新闻类型: {category_name}\n")
             f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write("=" * 50 + "\n\n")
+            
+            # 写入数据分析建议
+            if analytics_hints and analytics_hints.get('has_report'):
+                f.write("\n" + "=" * 50 + "\n")
+                f.write("【数据分析优化建议】\n")
+                f.write(f"推荐关注关键词: {', '.join(analytics_hints.get('keywords', []))}\n")
+                f.write(f"建议发布时间: {analytics_hints.get('best_publish_time', '09:00')}\n")
+                f.write("优化建议:\n")
+                for suggestion in analytics_hints.get('suggestions', [])[:3]:
+                    f.write(f"  - {suggestion}\n")
+            
+            f.write("\n" + "=" * 50 + "\n\n")
             for i, title in enumerate(titles, 1):
                 f.write(f"{i}. {title}\n")
         
         print(f"[ResearchAgent] 热点已保存: {filepath}")
         return str(filepath)
     
-    def run(self, category: str = 'general') -> str:
+    def run(self, category: str = 'general', use_analytics: bool = True) -> str:
         """
         运行ResearchAgent
         
         Args:
             category: 新闻类型
+            use_analytics: 是否使用数据分析优化建议
             
         Returns:
             输出文件路径
@@ -302,11 +316,26 @@ class ResearchAgent:
         print("ResearchAgent - 热点新闻获取")
         print(f"{'='*50}")
         
+        # 获取数据分析建议
+        analytics_hints = None
+        if use_analytics:
+            try:
+                try:
+                    from .analytics_agent import get_optimization_hints
+                except ImportError:
+                    from src.agents.analytics_agent import get_optimization_hints
+                analytics_hints = get_optimization_hints()
+                if analytics_hints.get('has_report'):
+                    print(f"[ResearchAgent] 已加载数据分析建议")
+                    print(f"  - 推荐关键词: {', '.join(analytics_hints.get('keywords', [])[:3])}")
+            except Exception as e:
+                print(f"[ResearchAgent] 加载分析建议失败: {e}")
+        
         # 获取热点
         titles = self.get_hot_topics(category)
         
-        # 保存到文件
-        filepath = self.save_to_file(titles, category)
+        # 保存到文件（包含分析建议）
+        filepath = self.save_to_file(titles, category, analytics_hints)
         
         print(f"[ResearchAgent] 完成！获取 {len(titles)} 条热点")
         return filepath

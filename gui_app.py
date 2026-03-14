@@ -10,6 +10,7 @@ import threading
 import webview
 from pathlib import Path
 from typing import Dict, Optional
+from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -98,21 +99,73 @@ class Api:
             self._update_step(3, "running")
             self.log("正在进行合规审查...")
             
-            try:
-                compliance_agent = ComplianceAgent(max_check_rounds=2)
-                passed, report = compliance_agent.run(self.current_article_file)
-                
-                if passed:
-                    self.log("[OK] 审查通过")
+            max_rewrite_attempts = 2  # 最多重写2次
+            rewrite_count = 0
+            
+            while rewrite_count < max_rewrite_attempts:
+                try:
+                    compliance_agent = ComplianceAgent(max_check_rounds=2)
+                    passed, report = compliance_agent.run(self.current_article_file)
+                    
+                    if passed:
+                        self.log("[OK] 审查通过")
+                        self._update_step(3, "completed")
+                        break
+                    else:
+                        rewrite_count += 1
+                        if rewrite_count >= max_rewrite_attempts:
+                            self.log(f"[FAIL] 审查未通过，已达最大重写次数({max_rewrite_attempts})", "error")
+                            self.log(f"[FAIL] 未通过原因: {report}", "error")
+                            self._update_step(3, "error")
+                            self.is_running = False
+                            return
+                        
+                        self.log(f"[WARN] 审查未通过(第{rewrite_count}次)，原因: {report}", "warning")
+                        self.log(f"[WARN] 正在根据反馈重写文章...")
+                        
+                        # 读取当前文章并重写
+                        try:
+                            with open(self.current_article_file, 'r', encoding='utf-8') as f:
+                                lines = f.readlines()
+                            
+                            # 解析文章信息
+                            title = lines[0].replace('标题：', '').strip()
+                            author = lines[1].replace('作者：', '').strip()
+                            category = lines[2].replace('类型：', '').strip()
+                            content = ''.join(lines[6:]).strip()
+                            
+                            # 调用重写
+                            writing_agent = WritingAgent()
+                            new_content = writing_agent.rewrite_article(
+                                title=title,
+                                author=author,
+                                category=category,
+                                content=content,
+                                feedback=report
+                            )
+                            
+                            # 保存重写后的文章
+                            with open(self.current_article_file, 'w', encoding='utf-8') as f:
+                                f.write(f"标题：{title}\n")
+                                f.write(f"作者：{author}\n")
+                                f.write(f"类型：{category}\n")
+                                f.write(f"字数：{len(new_content)}\n")
+                                f.write(f"时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                                f.write("=" * 50 + "\n\n")
+                                f.write(new_content)
+                            
+                            self.log(f"[OK] 文章已重写，重新审查...")
+                            
+                        except Exception as rewrite_error:
+                            self.log(f"[FAIL] 重写失败: {rewrite_error}", "error")
+                            self._update_step(3, "error")
+                            self.is_running = False
+                            return
+                        
+                except Exception as e:
+                    self.log(f"! 审查异常: {e}", "warning")
                     self._update_step(3, "completed")
-                else:
-                    self.log(f"[FAIL] 审查未通过: {report}", "error")
-                    self._update_step(3, "error")
-                    self.is_running = False
-                    return
-            except Exception as e:
-                self.log(f"! 审查异常: {e}", "warning")
-                self._update_step(3, "completed")
+                    break
             
             self._update_step(4, "running")
             self.log("正在发布文章...")
@@ -173,6 +226,43 @@ class Api:
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}
+    
+    def run_analytics(self) -> Dict:
+        """运行数据分析"""
+        if self.is_running:
+            return {"success": False, "error": "已有任务在运行"}
+        
+        self.is_running = True
+        self.log("[Analytics] 开始数据分析...")
+        self.log("[Analytics] 将打开浏览器，请扫码登录")
+        
+        def analytics_task():
+            try:
+                from src.agents.analytics_agent import AnalyticsAgent
+                
+                agent = AnalyticsAgent()
+                report = agent.run()
+                
+                self.log(f"[Analytics] [OK] 数据获取成功")
+                self.log(f"[Analytics] 昨日阅读: {report.yesterday.read_count}")
+                self.log(f"[Analytics] 昨日点赞: {report.yesterday.like_count}")
+                self.log(f"[Analytics] 昨日分享: {report.yesterday.share_count}")
+                self.log(f"[Analytics] 建议发布时间: {report.best_publish_time}")
+                self.log(f"[Analytics] 优化建议已保存，下次创作将自动应用")
+                
+            except Exception as e:
+                self.log(f"[Analytics] [FAIL] 分析失败: {e}", "error")
+            finally:
+                self.is_running = False
+                # 通知前端重置状态
+                if hasattr(self, 'window'):
+                    try:
+                        self.window.evaluate_js("analyticsCompleted()")
+                    except:
+                        pass
+        
+        threading.Thread(target=analytics_task, daemon=True).start()
+        return {"success": True}
 
 
 def create_html() -> str:
@@ -556,10 +646,15 @@ def create_html() -> str:
                 </div>
             </div>
             
-            <!-- 开始按钮 -->
-            <button class="btn btn-primary" id="startBtn" onclick="startPublish()">
-                <span>🚀</span> 一键发布
-            </button>
+            <!-- 操作按钮 -->
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" id="startBtn" onclick="startPublish()" style="flex: 2;">
+                    <span>🚀</span> 一键发布
+                </button>
+                <button class="btn" id="analyticsBtn" onclick="runAnalytics()" style="flex: 1; background: #07c160; color: white;">
+                    <span>📊</span> 数据分析
+                </button>
+            </div>
             
             <!-- 日志 -->
             <div class="card" style="margin-top: 12px;">
@@ -671,12 +766,46 @@ def create_html() -> str:
         // 更新按钮状态
         function updateBtnState() {
             const btn = document.getElementById('startBtn');
+            const analyticsBtn = document.getElementById('analyticsBtn');
             if (isRunning) {
                 btn.disabled = true;
+                analyticsBtn.disabled = true;
                 btn.innerHTML = '<div class="spinner"></div> 执行中...';
+                analyticsBtn.innerHTML = '<div class="spinner"></div> 分析中...';
             } else {
                 btn.disabled = false;
+                analyticsBtn.disabled = false;
                 btn.innerHTML = '<span>🚀</span> 一键发布';
+                analyticsBtn.innerHTML = '<span>📊</span> 数据分析';
+            }
+        }
+        
+        // 分析完成回调（供Python调用）
+        window.analyticsCompleted = function() {
+            isRunning = false;
+            updateBtnState();
+            addLog('数据分析完成', 'info');
+        };
+        
+        // 运行数据分析
+        async function runAnalytics() {
+            if (isRunning) return;
+            isRunning = true;
+            updateBtnState();
+            addLog('启动数据分析...', 'info');
+            
+            try {
+                const result = await pywebview.api.run_analytics();
+                if (!result.success) {
+                    addLog('启动失败: ' + result.error, 'error');
+                    isRunning = false;
+                    updateBtnState();
+                }
+                // 成功启动后等待回调，不在这里重置状态
+            } catch(e) {
+                addLog('启动失败', 'error');
+                isRunning = false;
+                updateBtnState();
             }
         }
         

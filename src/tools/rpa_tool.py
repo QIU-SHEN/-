@@ -2422,57 +2422,76 @@ class WeChatRPA:
             
             self._random_delay(2, 3)
             
-            # 步骤2: 点击确认发表
+            # 步骤2: 点击确认发表（循环等待按钮出现）
             self.detail_logger.step("点击确认发表")
             self.logger.info("步骤2: 点击确认发表...")
             
-            self.detail_logger.action("JavaScript点击", "确认发表按钮", "查找包含'发表'文本的按钮")
-            confirm1_clicked = self.page.evaluate("""
-                () => {
-                    const buttons = document.querySelectorAll('button.weui-desktop-btn_primary');
-                    for (let btn of buttons) {
-                        if (btn.textContent.trim() === '发表') {
-                            btn.click();
-                            return 'clicked';
+            self.detail_logger.info("等待确认发表按钮出现...")
+            confirm1_clicked = False
+            for attempt in range(10):  # 最多等待10秒
+                self._random_delay(0.5, 1)
+                
+                confirm1_clicked = self.page.evaluate("""
+                    () => {
+                        const buttons = document.querySelectorAll('button.weui-desktop-btn_primary');
+                        for (let btn of buttons) {
+                            const text = btn.textContent.trim();
+                            if (text === '发表' || text === '确定' || text === '确认') {
+                                btn.click();
+                                return 'clicked: ' + text;
+                            }
                         }
+                        return null;
                     }
-                    return null;
-                }
-            """)
+                """)
+                
+                if confirm1_clicked:
+                    self.detail_logger.success(f"已点击确认发表 ({confirm1_clicked})")
+                    self.logger.info("已点击确认发表")
+                    break
+                else:
+                    self.detail_logger.debug(f"等待确认按钮... {attempt+1}/10")
             
             if not confirm1_clicked:
                 self.detail_logger.error("未找到确认发表按钮")
                 raise Exception("未找到确认发表按钮")
             
-            self.detail_logger.success("已点击确认发表")
-            self.logger.info("已点击确认发表")
-            
             self._random_delay(2, 3)
             
-            # 步骤3: 点击继续发表
+            # 步骤3: 点击继续发表（循环等待按钮出现）
             self.detail_logger.step("点击继续发表")
             self.logger.info("步骤3: 点击继续发表...")
             
-            self.detail_logger.action("JavaScript点击", "继续发表按钮", "查找包含'继续发表'文本的按钮")
-            confirm2_clicked = self.page.evaluate("""
-                () => {
-                    const buttons = document.querySelectorAll('button.weui-desktop-btn_primary');
-                    for (let btn of buttons) {
-                        if (btn.textContent.includes('继续发表')) {
-                            btn.click();
-                            return 'clicked';
+            self.detail_logger.info("等待继续发表按钮出现...")
+            confirm2_clicked = False
+            for attempt in range(10):  # 最多等待10秒
+                self._random_delay(0.5, 1)
+                
+                confirm2_clicked = self.page.evaluate("""
+                    () => {
+                        const buttons = document.querySelectorAll('button.weui-desktop-btn_primary');
+                        for (let btn of buttons) {
+                            if (btn.textContent.includes('继续发表')) {
+                                btn.click();
+                                return 'clicked';
+                            }
                         }
+                        return null;
                     }
-                    return null;
-                }
-            """)
+                """)
+                
+                if confirm2_clicked:
+                    self.detail_logger.success("已点击继续发表")
+                    self.logger.info("已点击继续发表")
+                    break
+                else:
+                    self.detail_logger.debug(f"等待继续发表按钮... {attempt+1}/10")
             
             if not confirm2_clicked:
                 self.detail_logger.error("未找到继续发表按钮")
                 raise Exception("未找到继续发表按钮")
             
-            self.detail_logger.success("已点击继续发表")
-            self.logger.info("已点击继续发表")
+            # 点击成功，继续下一步
             
             # 步骤4: 等待用户扫描二维码
             self.detail_logger.step("等待用户扫描二维码")

@@ -13,7 +13,7 @@ import os
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict
 import requests
 
 
@@ -170,7 +170,7 @@ class WritingAgent:
         print(f"[WritingAgent] 选定标题（备选）: {selected}")
         return selected
     
-    def generate_article(self, title: str, author: str, category: str) -> str:
+    def generate_article(self, title: str, author: str, category: str, analytics_hints: Dict = None) -> str:
         """
         使用AI API生成文章
         
@@ -178,19 +178,35 @@ class WritingAgent:
             title: 文章标题
             author: 作者名
             category: 新闻类型
+            analytics_hints: 数据分析优化建议
             
         Returns:
             文章内容
         """
         print(f"[WritingAgent] 正在生成文章...")
         
-        # 构建prompt
+        # 构建基础prompt
         prompt = f"""你是一个专业的公众号文章写手。请根据以下标题撰写一篇公众号文章。
 
 标题：{title}
 作者：{author}
 类型：{category}
+"""
+        
+        # 添加数据分析优化建议
+        if analytics_hints and analytics_hints.get('has_report'):
+            prompt += f"""
 
+【基于历史数据的优化建议】
+1. 文章应注重提升互动性（参考昨日互动率数据）
+2. 建议关注以下热点关键词：{', '.join(analytics_hints.get('keywords', [])[:5])}
+3. 建议发布时段：{analytics_hints.get('best_publish_time', '09:00')}
+4. 内容优化方向：
+"""
+            for suggestion in analytics_hints.get('suggestions', [])[:3]:
+                prompt += f"   - {suggestion}\n"
+        
+        prompt += """
 要求：
 1. 文章字数约1000字
 2. 语言流畅，逻辑清晰
@@ -199,8 +215,22 @@ class WritingAgent:
 5. 有深度的分析和观点
 6. 结尾有总结或启发
 7. 不要包含任何违禁内容
-
-请直接输出文章正文内容（不需要包含标题和作者信息）："""
+"""
+        
+        # 如果有具体优化建议，加入更详细的指导
+        if analytics_hints and analytics_hints.get('has_report'):
+            latest_metrics = analytics_hints.get('latest_metrics', {})
+            if latest_metrics.get('read_count', 0) > 0:
+                engagement_rate = (latest_metrics.get('like_count', 0) + latest_metrics.get('share_count', 0)) / latest_metrics.get('read_count', 1) * 100
+                if engagement_rate < 5:
+                    prompt += "8. 特别注意：提高文章互动性，增加读者参与感（如提出问题引导评论）\n"
+                elif engagement_rate > 10:
+                    prompt += "8. 保持现有风格，该类型内容互动率表现优秀\n"
+        
+        prompt += "\n请直接输出文章正文内容（不需要包含标题和作者信息）："
+        
+        if analytics_hints and analytics_hints.get('has_report'):
+            print(f"[WritingAgent] 已应用数据分析优化建议")
 
         # 调用API
         headers = {
@@ -258,6 +288,85 @@ class WritingAgent:
 
 （本文仅代表作者本人观点，仅供参考）"""
     
+    def rewrite_article(self, title: str, author: str, category: str, content: str, feedback: str, analytics_hints: Dict = None) -> str:
+        """
+        根据审核反馈重写文章
+        
+        Args:
+            title: 文章标题
+            author: 作者名
+            category: 文章类型
+            content: 原文章内容
+            feedback: 审核反馈/未通过原因
+            analytics_hints: 数据分析优化建议
+            
+        Returns:
+            重写后的文章内容
+        """
+        print(f"[WritingAgent] 根据审核反馈重写文章...")
+        print(f"[WritingAgent] 反馈原因: {feedback[:100]}...")
+        
+        # 构建基础prompt
+        prompt = f"""你是一个专业的公众号文章写手。请根据审核反馈修改以下文章，使其符合微信公众号发布规范。
+
+原标题：{title}
+作者：{author}
+类型：{category}
+
+【原文章内容】
+{content[:2000]}...
+
+【审核反馈/未通过原因】
+{feedback}
+
+【修改要求】
+1. 针对上述审核反馈进行修改，消除所有违规内容
+2. 保持文章主题和核心观点不变
+3. 使用更中性、客观的表达方式
+4. 避免出现敏感词和违规表述
+5. 文章字数约1000字
+6. 语言流畅，逻辑清晰，适合微信公众号风格
+
+请直接输出修改后的文章正文内容（不需要包含标题和作者信息）："""
+        
+        # 调用API
+        headers = {
+            "Authorization": f"Bearer {self.API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": "gpt-4",
+            "messages": [
+                {"role": "system", "content": "你是一个专业的公众号文章写手，擅长根据反馈修改文章使其合规。"},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 2000
+        }
+        
+        try:
+            response = requests.post(self.API_URL, headers=headers, json=data, timeout=120)
+            response.raise_for_status()
+            result = response.json()
+            
+            new_content = result['choices'][0]['message']['content']
+            # 清理可能的markdown标记
+            new_content = new_content.strip()
+            if new_content.startswith('```'):
+                new_content = new_content.split('```')[1]
+                if new_content.startswith('markdown'):
+                    new_content = new_content[8:]
+            new_content = new_content.strip()
+            
+            print(f"[WritingAgent] 文章重写完成，字数: {len(new_content)}")
+            return new_content
+            
+        except Exception as e:
+            print(f"[WritingAgent] 重写API调用失败: {e}")
+            # 返回原内容（让上层决定如何处理）
+            return content
+    
     def save_article(self, title: str, author: str, content: str, category: str) -> str:
         """
         保存文章到文件
@@ -288,13 +397,14 @@ class WritingAgent:
         print(f"[WritingAgent] 文章已保存: {filepath}")
         return str(filepath)
     
-    def run(self, hot_topics_file: str, author: str) -> str:
+    def run(self, hot_topics_file: str, author: str, use_analytics: bool = True) -> str:
         """
         运行WritingAgent
         
         Args:
             hot_topics_file: 热点标题文件路径
             author: 作者名
+            use_analytics: 是否使用数据分析优化建议
             
         Returns:
             输出文件路径
@@ -302,6 +412,20 @@ class WritingAgent:
         print(f"\n{'='*50}")
         print("WritingAgent - 文章撰写")
         print(f"{'='*50}")
+        
+        # 获取数据分析建议
+        analytics_hints = None
+        if use_analytics:
+            try:
+                try:
+                    from .analytics_agent import get_optimization_hints
+                except ImportError:
+                    from src.agents.analytics_agent import get_optimization_hints
+                analytics_hints = get_optimization_hints()
+                if analytics_hints.get('has_report'):
+                    print(f"[WritingAgent] 已加载数据分析优化建议")
+            except Exception as e:
+                print(f"[WritingAgent] 加载分析建议失败: {e}")
         
         # 读取热点
         category, titles = self.read_hot_topics(hot_topics_file)
@@ -312,8 +436,8 @@ class WritingAgent:
         # 使用AI生成新标题
         selected_title = self.generate_title_from_topics(titles, category)
         
-        # 生成文章
-        content = self.generate_article(selected_title, author, category)
+        # 生成文章（传入分析建议）
+        content = self.generate_article(selected_title, author, category, analytics_hints)
         
         # 保存文章
         filepath = self.save_article(selected_title, author, content, category)
