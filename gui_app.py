@@ -227,6 +227,132 @@ class Api:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    def get_startup_status(self) -> Dict:
+        """获取开机自启动状态"""
+        try:
+            from src.utils.startup_manager import StartupManager
+            manager = StartupManager()
+            enabled = manager.is_enabled()
+            return {"success": True, "enabled": enabled}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    def toggle_startup(self, enabled: bool) -> Dict:
+        """设置开机自启动"""
+        try:
+            from src.utils.startup_manager import StartupManager
+            manager = StartupManager()
+            result = manager.toggle(enabled)
+            if result:
+                status = "启用" if enabled else "禁用"
+                self.log(f"[设置] 开机自启动已{status}")
+                return {"success": True, "enabled": enabled}
+            else:
+                return {"success": False, "error": "设置失败"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    def get_scheduler_config(self) -> Dict:
+        """获取定时任务配置"""
+        try:
+            from src.utils.scheduler import get_scheduler
+            scheduler = get_scheduler()
+            config = scheduler.get_config()
+            return {"success": True, "config": config}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    def update_scheduler_config(self, config: Dict) -> Dict:
+        """更新定时任务配置"""
+        try:
+            from src.utils.scheduler import get_scheduler
+            scheduler = get_scheduler()
+            
+            # 更新配置
+            scheduler.update_config(**config)
+            
+            # 如果启用了任何定时任务，确保调度器在运行
+            if config.get('analytics_enabled') or config.get('publish_enabled'):
+                if not scheduler.running:
+                    self._setup_scheduler_callbacks(scheduler)
+                    scheduler.start()
+                    self.log("[Scheduler] 定时任务调度器已启动")
+            
+            self.log("[设置] 定时任务配置已更新")
+            return {"success": True}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    def _setup_scheduler_callbacks(self, scheduler):
+        """设置定时任务回调"""
+        # 注册数据分析回调
+        def analytics_callback():
+            self.log("[Scheduler] 执行定时数据分析...")
+            try:
+                from src.agents.analytics_agent import AnalyticsAgent
+                agent = AnalyticsAgent()
+                report = agent.run()
+                self.log(f"[Scheduler] [OK] 数据分析完成，昨日阅读: {report.yesterday.read_count}")
+            except Exception as e:
+                self.log(f"[Scheduler] [FAIL] 数据分析失败: {e}", "error")
+        
+        # 注册自动发布回调
+        def publish_callback():
+            self.log("[Scheduler] 执行定时发布...")
+            # 在新线程中执行发布流程，避免阻塞调度器
+            thread = threading.Thread(target=self._scheduled_publish, daemon=True)
+            thread.start()
+        
+        scheduler.register_callback('analytics', analytics_callback)
+        scheduler.register_callback('publish', publish_callback)
+    
+    def _scheduled_publish(self):
+        """定时发布任务"""
+        try:
+            from src.utils.scheduler import get_scheduler
+            config = get_scheduler().get_config()
+            category = config.get('publish_category', 'tech')
+            author = config.get('publish_author', 'AI小编')
+            
+            self.log(f"[Scheduler] 开始自动发布流程: {category}")
+            
+            # 获取热点
+            from src.agents.research_agent import ResearchAgent
+            research = ResearchAgent()
+            hot_file = research.run(category)
+            
+            # 写作
+            from src.agents.writing_agent import WritingAgent
+            writer = WritingAgent()
+            article_file = writer.run(hot_file, author)
+            
+            # 审查
+            from src.agents.compliance_agent import ComplianceAgent
+            compliance = ComplianceAgent(max_check_rounds=2)
+            passed, report = compliance.run(article_file)
+            
+            if not passed:
+                self.log(f"[Scheduler] [FAIL] 审查未通过: {report}", "error")
+                return
+            
+            # 发布
+            import yaml
+            cfg_file = Path("./config/config.yaml")
+            cfg = yaml.safe_load(open(cfg_file, 'r', encoding='utf-8')) if cfg_file.exists() else {'wechat': {'use_rpa': True}}
+            cfg['wechat']['auto_publish'] = True
+            
+            from src.agents.publish_agent import PublishAgent
+            publish = PublishAgent(cfg)
+            result = publish.run_from_file(article_file)
+            
+            if result.get('status') == 'success':
+                self.log("[Scheduler] [OK] [OK] [OK] 定时发布成功!")
+            else:
+                self.log(f"[Scheduler] [FAIL] 发布失败", "error")
+                
+        except Exception as e:
+            self.log(f"[Scheduler] [FAIL] 定时发布异常: {e}", "error")
+    
     def run_analytics(self) -> Dict:
         """运行数据分析"""
         if self.is_running:
@@ -313,6 +439,162 @@ def create_html() -> str:
             font-size: 12px;
             opacity: 0.9;
             margin-top: 4px;
+        }
+        
+        .header-settings {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 20px;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+        
+        .header-settings:hover {
+            opacity: 1;
+        }
+        
+        /* 设置弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 320px;
+            max-width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .modal-body {
+            padding: 10px 20px;
+        }
+        
+        /* 开关样式 */
+        .switch-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .switch-item:last-child {
+            border-bottom: none;
+        }
+        
+        .switch-info {
+            flex: 1;
+        }
+        
+        .switch-label {
+            font-size: 14px;
+            color: #333;
+            display: block;
+        }
+        
+        .switch-desc {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+            display: block;
+        }
+        
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 28px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #07c160;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(22px);
         }
         
         /* 内容区 */
@@ -596,6 +878,82 @@ def create_html() -> str:
         <div class="header">
             <h1>WeChat AI Publisher</h1>
             <p>自动获取热点 · AI写作 · 一键发布</p>
+            <div class="header-settings" onclick="openSettings()" title="设置">⚙️</div>
+        </div>
+        
+        <!-- 设置弹窗 -->
+        <div class="modal-overlay" id="settingsModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>设置</h3>
+                    <span class="modal-close" onclick="closeSettings()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <!-- 开机自启动 -->
+                    <div class="switch-item">
+                        <div class="switch-info">
+                            <span class="switch-label">开机自启动</span>
+                            <span class="switch-desc">系统启动时自动运行本程序</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="startupSwitch" onchange="toggleStartup(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <!-- 分隔线 -->
+                    <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
+                    
+                    <!-- 定时数据分析 -->
+                    <div class="switch-item">
+                        <div class="switch-info">
+                            <span class="switch-label">定时数据分析</span>
+                            <span class="switch-desc">每天自动采集昨日数据</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="schedulerAnalyticsEnabled" onchange="toggleSchedulerAnalytics(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="time-picker" id="analyticsTimePicker" style="margin-bottom: 15px; padding-left: 10px;">
+                        <label style="font-size: 13px; color: #666; margin-right: 10px;">执行时间:</label>
+                        <input type="time" id="analyticsTime" value="09:00" onchange="updateSchedulerConfig()" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <!-- 定时自动发布 -->
+                    <div class="switch-item">
+                        <div class="switch-info">
+                            <span class="switch-label">定时自动发布</span>
+                            <span class="switch-desc">每天自动生成并发布文章</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="schedulerPublishEnabled" onchange="toggleSchedulerPublish(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div id="publishConfig" style="padding-left: 10px; display: none;">
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 13px; color: #666; margin-right: 10px;">执行时间:</label>
+                            <input type="time" id="publishTime" value="10:00" onchange="updateSchedulerConfig()" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 13px; color: #666; margin-right: 10px;">文章类型:</label>
+                            <select id="schedulerCategory" onchange="updateSchedulerConfig()" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 120px;">
+                                <option value="tech">科技</option>
+                                <option value="finance">财经</option>
+                                <option value="entertainment">娱乐</option>
+                                <option value="sports">体育</option>
+                                <option value="society">社会</option>
+                                <option value="world">国际</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; color: #666; margin-right: 10px;">作者名称:</label>
+                            <input type="text" id="schedulerAuthor" value="AI小编" onchange="updateSchedulerConfig()" style="padding: 5px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; width: 120px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="content">
@@ -677,6 +1035,10 @@ def create_html() -> str:
         window.onload = async function() {
             renderTypes();
             await checkBrowser();
+            // 延迟加载设置，确保pywebview已初始化
+            setTimeout(async () => {
+                await loadSettings();
+            }, 500);
             addLog('程序就绪，请选择类型并点击发布', 'info');
         };
         
@@ -839,6 +1201,111 @@ def create_html() -> str:
             box.scrollTop = box.scrollHeight;
         };
         
+        // 设置相关函数
+        async function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            // 打开时刷新状态
+            await loadSettings();
+        }
+        
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+        
+        async function loadSettings() {
+            try {
+                console.log('正在加载设置...');
+                
+                // 加载开机自启动设置
+                const startupResult = await pywebview.api.get_startup_status();
+                console.log('开机启动设置返回:', startupResult);
+                if (startupResult.success) {
+                    document.getElementById('startupSwitch').checked = startupResult.enabled;
+                }
+                
+                // 加载定时任务设置
+                const schedulerResult = await pywebview.api.get_scheduler_config();
+                console.log('定时任务设置返回:', schedulerResult);
+                if (schedulerResult.success) {
+                    const config = schedulerResult.config;
+                    
+                    // 数据分析设置
+                    document.getElementById('schedulerAnalyticsEnabled').checked = config.analytics_enabled;
+                    document.getElementById('analyticsTime').value = config.analytics_time;
+                    document.getElementById('analyticsTimePicker').style.display = 
+                        config.analytics_enabled ? 'block' : 'none';
+                    
+                    // 自动发布设置
+                    document.getElementById('schedulerPublishEnabled').checked = config.publish_enabled;
+                    document.getElementById('publishTime').value = config.publish_time;
+                    document.getElementById('schedulerCategory').value = config.publish_category;
+                    document.getElementById('schedulerAuthor').value = config.publish_author;
+                    document.getElementById('publishConfig').style.display = 
+                        config.publish_enabled ? 'block' : 'none';
+                }
+            } catch(e) {
+                console.error('加载设置异常:', e);
+            }
+        }
+        
+        async function toggleStartup(checkbox) {
+            const enabled = checkbox.checked;
+            try {
+                const result = await pywebview.api.toggle_startup(enabled);
+                if (!result.success) {
+                    checkbox.checked = !enabled;
+                    addLog('设置失败: ' + result.error, 'error');
+                } else {
+                    addLog(enabled ? '[设置] 开机自启动已启用' : '[设置] 开机自启动已禁用');
+                }
+            } catch(e) {
+                checkbox.checked = !enabled;
+                addLog('设置失败', 'error');
+            }
+        }
+        
+        // 定时任务设置函数
+        function toggleSchedulerAnalytics(checkbox) {
+            document.getElementById('analyticsTimePicker').style.display = 
+                checkbox.checked ? 'block' : 'none';
+            updateSchedulerConfig();
+            addLog(checkbox.checked ? '[设置] 定时数据分析已启用' : '[设置] 定时数据分析已禁用');
+        }
+        
+        function toggleSchedulerPublish(checkbox) {
+            document.getElementById('publishConfig').style.display = 
+                checkbox.checked ? 'block' : 'none';
+            updateSchedulerConfig();
+            addLog(checkbox.checked ? '[设置] 定时自动发布已启用' : '[设置] 定时自动发布已禁用');
+        }
+        
+        async function updateSchedulerConfig() {
+            try {
+                const config = {
+                    analytics_enabled: document.getElementById('schedulerAnalyticsEnabled').checked,
+                    analytics_time: document.getElementById('analyticsTime').value,
+                    publish_enabled: document.getElementById('schedulerPublishEnabled').checked,
+                    publish_time: document.getElementById('publishTime').value,
+                    publish_category: document.getElementById('schedulerCategory').value,
+                    publish_author: document.getElementById('schedulerAuthor').value
+                };
+                
+                const result = await pywebview.api.update_scheduler_config(config);
+                if (!result.success) {
+                    addLog('定时任务设置保存失败: ' + result.error, 'error');
+                }
+            } catch(e) {
+                console.error('保存定时任务配置失败:', e);
+            }
+        }
+        
+        // 点击弹窗外部关闭
+        document.getElementById('settingsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSettings();
+            }
+        });
+        
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
@@ -851,6 +1318,22 @@ def create_html() -> str:
 
 def main():
     api = Api()
+    
+    # 初始化并启动定时任务调度器
+    try:
+        from src.utils.scheduler import get_scheduler
+        scheduler = get_scheduler()
+        api._setup_scheduler_callbacks(scheduler)
+        
+        # 如果配置了定时任务，自动启动调度器
+        config = scheduler.get_config()
+        if config.get('analytics_enabled') or config.get('publish_enabled'):
+            scheduler.start()
+            print(f"[Main] 定时任务调度器已启动")
+            print(f"[Main] 数据分析: {'启用' if config.get('analytics_enabled') else '禁用'} {config.get('analytics_time', '09:00')}")
+            print(f"[Main] 自动发布: {'启用' if config.get('publish_enabled') else '禁用'} {config.get('publish_time', '10:00')}")
+    except Exception as e:
+        print(f"[Main] 初始化调度器失败: {e}")
     
     window = webview.create_window(
         title='WeChat AI Publisher',
@@ -865,6 +1348,14 @@ def main():
     api.window = window
     
     webview.start(debug=False, http_server=True)
+    
+    # 程序退出时停止调度器
+    try:
+        from src.utils.scheduler import stop_scheduler
+        stop_scheduler()
+        print("[Main] 定时任务调度器已停止")
+    except:
+        pass
 
 
 if __name__ == '__main__':

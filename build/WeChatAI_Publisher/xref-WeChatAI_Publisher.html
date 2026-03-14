@@ -181,6 +181,8 @@ imports:
  &#8226;   <a href="#src.agents.writing_agent">src.agents.writing_agent</a>
  &#8226;   <a href="#src.tools.rpa_tool">src.tools.rpa_tool</a>
  &#8226;   <a href="#src.tools.wechat_api">src.tools.wechat_api</a>
+ &#8226;   <a href="#src.utils.scheduler">src.utils.scheduler</a>
+ &#8226;   <a href="#src.utils.startup_manager">src.utils.startup_manager</a>
  &#8226;   <a href="#sre_compile">sre_compile</a>
  &#8226;   <a href="#sre_constants">sre_constants</a>
  &#8226;   <a href="#sre_parse">sre_parse</a>
@@ -8455,6 +8457,7 @@ imported by:
  &#8226;   <a href="#src.agents.writing_agent">src.agents.writing_agent</a>
  &#8226;   <a href="#src.tools.rpa_tool">src.tools.rpa_tool</a>
  &#8226;   <a href="#src.tools.wechat_api">src.tools.wechat_api</a>
+ &#8226;   <a href="#src.utils.scheduler">src.utils.scheduler</a>
  &#8226;   <a href="#tornado.gen">tornado.gen</a>
  &#8226;   <a href="#tornado.httputil">tornado.httputil</a>
  &#8226;   <a href="#tornado.ioloop">tornado.ioloop</a>
@@ -15539,6 +15542,8 @@ imported by:
  &#8226;   <a href="#src.agents.publish_agent">src.agents.publish_agent</a>
  &#8226;   <a href="#src.agents.research_agent">src.agents.research_agent</a>
  &#8226;   <a href="#src.tools.wechat_api">src.tools.wechat_api</a>
+ &#8226;   <a href="#src.utils.scheduler">src.utils.scheduler</a>
+ &#8226;   <a href="#src.utils.startup_manager">src.utils.startup_manager</a>
  &#8226;   <a href="#tornado.escape">tornado.escape</a>
  &#8226;   <a href="#urllib3._request_methods">urllib3._request_methods</a>
  &#8226;   <a href="#urllib3.response">urllib3.response</a>
@@ -17315,6 +17320,7 @@ imported by:
  &#8226;   <a href="#socket">socket</a>
  &#8226;   <a href="#socketserver">socketserver</a>
  &#8226;   <a href="#src.agents.writing_agent">src.agents.writing_agent</a>
+ &#8226;   <a href="#src.utils.startup_manager">src.utils.startup_manager</a>
  &#8226;   <a href="#ssl">ssl</a>
  &#8226;   <a href="#subprocess">subprocess</a>
  &#8226;   <a href="#sysconfig">sysconfig</a>
@@ -17835,6 +17841,8 @@ imported by:
  &#8226;   <a href="#src.agents.research_agent">src.agents.research_agent</a>
  &#8226;   <a href="#src.agents.writing_agent">src.agents.writing_agent</a>
  &#8226;   <a href="#src.tools.rpa_tool">src.tools.rpa_tool</a>
+ &#8226;   <a href="#src.utils.scheduler">src.utils.scheduler</a>
+ &#8226;   <a href="#src.utils.startup_manager">src.utils.startup_manager</a>
  &#8226;   <a href="#webview.platforms.gtk">webview.platforms.gtk</a>
  &#8226;   <a href="#zipfile">zipfile</a>
 
@@ -26845,6 +26853,7 @@ imported by:
 imported by:
     <a href="#src.agents">src.agents</a>
  &#8226;   <a href="#src.tools">src.tools</a>
+ &#8226;   <a href="#src.utils">src.utils</a>
 
   </div>
 
@@ -27062,6 +27071,66 @@ imports:
 imported by:
     <a href="#gui_app.py">gui_app.py</a>
  &#8226;   <a href="#src.agents.publish_agent">src.agents.publish_agent</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="src.utils"></a>
+  <a target="code" href="-" type="text/plain"><tt>src.utils</tt></a>
+<span class="moduletype">NamespacePackage</span>  <div class="import">
+imports:
+    <a href="#src">src</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#src.utils.scheduler">src.utils.scheduler</a>
+ &#8226;   <a href="#src.utils.startup_manager">src.utils.startup_manager</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="src.utils.scheduler"></a>
+  <a target="code" href="///D:/OpenClaw-Projects/wechat-ai-assistant/src/utils/scheduler.py" type="text/plain"><tt>src.utils.scheduler</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#datetime">datetime</a>
+ &#8226;   <a href="#json">json</a>
+ &#8226;   <a href="#pathlib">pathlib</a>
+ &#8226;   <a href="#src.utils">src.utils</a>
+ &#8226;   <a href="#threading">threading</a>
+ &#8226;   <a href="#time">time</a>
+ &#8226;   <a href="#typing">typing</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#gui_app.py">gui_app.py</a>
+
+  </div>
+
+</div>
+
+<div class="node">
+  <a name="src.utils.startup_manager"></a>
+  <a target="code" href="///D:/OpenClaw-Projects/wechat-ai-assistant/src/utils/startup_manager.py" type="text/plain"><tt>src.utils.startup_manager</tt></a>
+<span class="moduletype">SourceModule</span>  <div class="import">
+imports:
+    <a href="#json">json</a>
+ &#8226;   <a href="#os">os</a>
+ &#8226;   <a href="#pathlib">pathlib</a>
+ &#8226;   <a href="#src.utils">src.utils</a>
+ &#8226;   <a href="#subprocess">subprocess</a>
+ &#8226;   <a href="#sys">sys</a>
+
+  </div>
+  <div class="import">
+imported by:
+    <a href="#gui_app.py">gui_app.py</a>
 
   </div>
 
@@ -27421,6 +27490,7 @@ imported by:
  &#8226;   <a href="#setuptools._vendor.packaging._musllinux">setuptools._vendor.packaging._musllinux</a>
  &#8226;   <a href="#setuptools.installer">setuptools.installer</a>
  &#8226;   <a href="#setuptools.msvc">setuptools.msvc</a>
+ &#8226;   <a href="#src.utils.startup_manager">src.utils.startup_manager</a>
  &#8226;   <a href="#tornado.process">tornado.process</a>
  &#8226;   <a href="#uuid">uuid</a>
  &#8226;   <a href="#webbrowser">webbrowser</a>
@@ -27695,6 +27765,7 @@ imported by:
  &#8226;   <a href="#src.agents.compliance_agent">src.agents.compliance_agent</a>
  &#8226;   <a href="#src.agents.writing_agent">src.agents.writing_agent</a>
  &#8226;   <a href="#src.tools.rpa_tool">src.tools.rpa_tool</a>
+ &#8226;   <a href="#src.utils.startup_manager">src.utils.startup_manager</a>
  &#8226;   <a href="#sre_compile">sre_compile</a>
  &#8226;   <a href="#ssl">ssl</a>
  &#8226;   <a href="#subprocess">subprocess</a>
@@ -28019,6 +28090,7 @@ imported by:
  &#8226;   <a href="#requests.cookies">requests.cookies</a>
  &#8226;   <a href="#setuptools._vendor.pyparsing.core">setuptools._vendor.pyparsing.core</a>
  &#8226;   <a href="#socketserver">socketserver</a>
+ &#8226;   <a href="#src.utils.scheduler">src.utils.scheduler</a>
  &#8226;   <a href="#subprocess">subprocess</a>
  &#8226;   <a href="#tornado.platform.asyncio">tornado.platform.asyncio</a>
  &#8226;   <a href="#unittest.mock">unittest.mock</a>
@@ -28098,6 +28170,7 @@ imported by:
  &#8226;   <a href="#src.agents.analytics_agent">src.agents.analytics_agent</a>
  &#8226;   <a href="#src.tools.rpa_tool">src.tools.rpa_tool</a>
  &#8226;   <a href="#src.tools.wechat_api">src.tools.wechat_api</a>
+ &#8226;   <a href="#src.utils.scheduler">src.utils.scheduler</a>
  &#8226;   <a href="#ssl">ssl</a>
  &#8226;   <a href="#subprocess">subprocess</a>
  &#8226;   <a href="#tarfile">tarfile</a>
@@ -29245,6 +29318,7 @@ imported by:
  &#8226;   <a href="#src.agents.writing_agent">src.agents.writing_agent</a>
  &#8226;   <a href="#src.tools.rpa_tool">src.tools.rpa_tool</a>
  &#8226;   <a href="#src.tools.wechat_api">src.tools.wechat_api</a>
+ &#8226;   <a href="#src.utils.scheduler">src.utils.scheduler</a>
  &#8226;   <a href="#tornado">tornado</a>
  &#8226;   <a href="#tornado.concurrent">tornado.concurrent</a>
  &#8226;   <a href="#tornado.escape">tornado.escape</a>

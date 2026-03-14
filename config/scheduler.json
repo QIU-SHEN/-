@@ -1,0 +1,12 @@
+{
+  "analytics_enabled": true,
+  "analytics_time": "09:00",
+  "publish_enabled": true,
+  "publish_time": "10:00",
+  "publish_category": "tech",
+  "publish_author": "AI小编",
+  "last_run": {
+    "analytics": null,
+    "publish": null
+  }
+}
